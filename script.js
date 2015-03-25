@@ -102,6 +102,75 @@ Maze.prototype.isInBounds = function(x, y) {
 
 }
 
+Maze.prototype.canMove = function(x, y, direction) {
+
+	if (!this.isValidDirection(direction)) {
+
+		return false;
+
+	}
+
+	if (!this.isInBounds(x,y)) {
+
+		return false;
+
+	}
+
+	var forwardX, forwardY;
+
+	switch(direction) {
+
+		case 'north':
+			forwardX = x;
+			forwardY = y + 1;
+			break;
+		case 'east':
+			forwardX = x + 1;
+			forwardY = y;
+			break;
+		case 'south':
+			forwardX = x;
+			forwardY = y - 1;
+			break;
+		case 'west':
+			forwardX = x - 1;
+			forwardY = y;
+			break;
+
+	}
+
+	if (!this.isInBounds(forwardX, forwardY)) {
+
+		return false;
+
+	}
+
+	if (this.spaces[x][y][direction]) {
+
+		return false;
+
+	}
+
+	var opposites = {
+
+		north: 'south',
+		east: 'west',
+		south: 'north',
+		west: 'east'
+
+	}
+
+	if (this.spaces[forwardX][forwardY][opposites[direction]]) {
+
+		return false;
+
+	}
+
+
+	return true;
+
+}
+
 // Constructor for the space. walls etc
 function MazeSpace(directions) {
 
@@ -178,4 +247,80 @@ Robot.prototype.turnLeft = function() {
     this.orientation = lefts[this.orientation];
     return true;
     
+}
+
+Robot.prototype.moveForward = function() {
+
+	if(!this.canMoveForward()) {
+
+		return false;
+
+	}
+
+	switch(this.orientation) {
+
+		case 'north':
+			this.y += 1
+			break;
+		case 'east':
+			this.x += 1
+			break;
+		case 'south':
+			this.y -= 1
+			break;
+		case 'west':
+			this.x -= 1
+			break;
+
+	}
+
+	return true;
+
+}
+
+Robot.prototype.canMoveForward = function() {
+
+	if (!this.maze) {
+
+		return false;
+
+	}
+
+	return this.maze.canMove(this.x, this.y, this.orientation)
+
+}
+
+Robot.prototype.exitMaze = function(steps) {
+
+	if(this.maze) {
+
+		while(steps != 0) {
+
+			steps -= 1;
+
+			if(this.canMoveForward()) {
+
+				this.moveForward();
+				this.turnLeft();
+
+			}
+
+			else {
+
+				this.turnRight();
+
+			}
+
+			if(this.x == this.maze.endX && this.y == this.maze.endY) {
+
+				return true;
+
+			}
+
+		}
+
+		return false;
+
+	}
+
 }
